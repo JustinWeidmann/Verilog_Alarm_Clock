@@ -1,0 +1,39 @@
+module lab03(
+    input logic rst,
+    input logic clk,
+
+    input logic timeSet,
+    input logic upHour,
+    input logic upMin,
+
+    input logic alarmSet,
+    input logic debug,
+
+    input logic alarmLED,
+    input logic sec,
+    input logic alarmClear,
+
+    output logic [6:0] hex0,
+    output logic [6:0] hex1,
+    output logic [6:0] hex2,
+    output logic [6:0] hex3
+);
+    logic [26:0] count50;
+    logic [5:0] countMin;
+    logic onceler;
+    logic oneMin;
+    logic incHour;
+
+    counter13 #(50_000_001) bigCout50(.clk, .rst(!rst), .inc(1'b1), .dec(1'b0), .cnt(count50));
+	assign onceler = (count50=='0);
+
+    counter13 #(61) minCount(.clk, .rst(!rst), .inc(onceler), .dec(1'b0), .cnt(countMin));
+    assign oneMin = (countMin=='0);
+
+    assign incHour = (countMin && (oneMin=='0));
+
+    timePiece #(60) min(.clk, .rst, .onceler, .inc(oneMin), .dec(1'b0), .hex0(hex2), .hex1(hex3));
+    timePiece #(24) hour(.clk, .rst, .onceler, .inc(incHour), .dec(1'b0), .hex0, .hex1);
+
+
+endmodule
